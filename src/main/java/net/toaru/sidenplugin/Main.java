@@ -66,7 +66,6 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         return Collections.emptyList();
     }
 
-
     private Optional<String> checkPermission(CommandSender sender, String name) {
         if (sender.hasPermission("assay.passthrough." + name))
             return Optional.empty();
@@ -98,7 +97,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         inventoryItemCounter.start();
 
         // イベントリスナーの登録
-        getServer().getPluginManager().registerEvents(new CommandBlockViewer(), this);
+        getServer().getPluginManager().registerEvents(new CommandBlockViewer(this), this);
         this.getCommand("omikuji").setExecutor(new OmikujiCommand());
         getCommand("stats").setExecutor(new PlayerStatsCommand());
         getServer().getPluginManager().registerEvents(inventoryItemCounter, this);
