@@ -1,0 +1,115 @@
+name: SidenPlugin
+version: '1.0'
+main: net.toaru.sidenplugin.Main
+api-version: '1.20'
+authors: [Toaru]
+commands:
+  timer:
+    description: タイマー管理コマンド
+    usage: /timer <start|stop|reset|time|list> [時間:分:秒|タイマー名]
+    tab-completer: com.example.timerplugin.TimerTabCompleter
+  omikuji:
+    description: おみくじを引くコマンド
+    usage: /<command>
+  stats:
+    description: プレイヤーの統計情報を表示する
+  item:
+    description: アイテムエディット
+  as:
+    usage: |-
+      /as <name> text
+    description: Say as <name>
+    permission: assay
+  head:
+    description: プレイヤの頭をチョンパします！
+  hat:
+    description: プレイヤーやアイテムをかぶります。
+  unhat:
+    description: かぶっているエンティティやアイテムをぬぎます。
+  v:
+    permission: newvote.v
+  yvote:
+    permission: newvote.v
+  vs:
+    permission: newvote.vs
+  vget:
+    permission: newvote.vs
+  server:
+    description: サーバーまたはプラグインを再起動するコマンド
+  sethome:
+    description: ホームを設定するコマンド
+  home:
+    description: ホームに戻るコマンド
+  day:
+    description: 昼にするコマンド
+  night:
+    description: 夜にするコマンド
+  coords:
+    description: プレイヤーの座標を表示するコマンド
+  players:
+    description: プレイヤーリストを表示するコマンド
+
+permissions:
+  timer.use:
+    description: タイマーコマンドを使用する権限
+    default: true
+  farmprotection.bypass:
+    description: Allows the player to bypass farm protection
+    default: op
+  seikatsu.head:
+    description: プレイヤの頭をチョンパします！
+    default: true
+  seikatsu.hat:
+    description: プレイヤーやアイテムをかぶります。
+  seikatsu.hat.item:
+    description: アイテムをかぶります。
+    default: true
+  seikatsu.hat.entity:
+    description: エンティティをかぶります。
+    default: true
+  seikatsu.hat.player:
+    description: プレイヤーをかぶります。
+    default: op
+  seikatsu.unhat:
+    description: かぶってるエンティティやアイテムを脱ぎます。
+    default: true
+  seikatsu.mention.use:
+    description: メンションを飛ばせます。
+    default: true
+  seikatsu.mention.bypass:
+    description: メンションの影響を受けません。
+    default: op
+  assay:
+    default: true
+  assay.offline:
+    default: op
+    description: オフラインの人として
+  assay.outside:
+    default: op
+    description: 鯖に入ったことのない人として
+  assay.passthrough.*:
+    default: false
+    description: |-
+      ここに追加された人はオフラインや鯖に入ったことがなくても発言できる
+      assay.passthrough.<name>
+  assay.as.*:
+    default: true
+    description: |-
+      この権限がない人は発言できない
+      assay.as.<name>
+  assay.realname.*:
+    default: false
+    description: |-
+      この権限がある人としてなりすませる
+      assay.realname.<name>
+  lighthead:
+    description: このプラグインのメインコマンドです。
+    children:
+      lighthead.head: true
+  lighthead.head:
+    description: プレイヤの頭をチョンパします！
+    default: true
+  newvote.v:
+    default: true
+  newvote.vs:
+    default: op
