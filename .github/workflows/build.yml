@@ -1,0 +1,30 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main  # メインブランチにプッシュされたとき
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2  # リポジトリをチェックアウト
+
+    - name: Set up JDK 11  # JDK 11をセットアップ
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+
+    - name: Build with Gradle  # Gradleでビルド
+      run: ./gradlew build
+
+    - name: Commit and Push to GitHub  # GitHubにコミットしてプッシュ
+      if: success()  # ビルドが成功した場合のみ実行
+      run: |
+        git config --local user.email "3ephyer@gmail.com"
+        git config --local user.name "Toaru"
+        git add .
+        git commit -m "機能追加、修正"
+        git push origin main
