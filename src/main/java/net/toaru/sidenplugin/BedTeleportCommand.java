@@ -13,7 +13,7 @@ public class BedTeleportCommand implements CommandExecutor {
             Player player = (Player) sender;
             if (player.getBedSpawnLocation() != null) {
                 player.teleport(player.getBedSpawnLocation());
-                player.sendMessage("ベッドにテレポートしました！");
+                player.sendMessage("ベッドにテレポートしましたs！");
             } else {
                 player.sendMessage("ベッドが見つかりませんでした。");
             }
