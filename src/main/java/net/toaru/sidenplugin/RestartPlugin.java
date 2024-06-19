@@ -7,7 +7,6 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +22,12 @@ public class RestartPlugin implements Listener, TabExecutor, TabCompleter {
         if (args.length == 0) {
             sender.sendMessage("Usage: /server <restart|plugin> [plugin name]");
             return false;
+        }
+
+        if (args[0].equalsIgnoreCase("shutdown")) {
+            sender.sendMessage("サーバーをシャットダウンします...");
+            shutdownServer();
+            return true;
         }
 
         if (args[0].equalsIgnoreCase("restart")) {
@@ -52,6 +57,10 @@ public class RestartPlugin implements Listener, TabExecutor, TabCompleter {
 
         sender.sendMessage("Usage: /server <restart|plugin> [plugin name]");
         return false;
+    }
+
+    private void shutdownServer() {
+        Bukkit.shutdown(); // サーバーをシャットダウン
     }
 
     private void restartServer(CommandSender sender) {
@@ -89,7 +98,7 @@ public class RestartPlugin implements Listener, TabExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return Arrays.asList("restart", "plugin");
+            return Arrays.asList("restart", "plugin", "shutdown");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("plugin")) {
             List<String> pluginNames = new ArrayList<>();
             for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {

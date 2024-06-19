@@ -7,7 +7,6 @@ import net.toaru.sidenplugin.commands.CommandUnHat;
 import net.toaru.sidenplugin.events.HatEventListener;
 import net.toaru.sidenplugin.events.MentionEventListener;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -33,11 +32,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Objects;
 
 
 
 public final class Main extends JavaPlugin implements CommandExecutor, TabCompleter {
+
 
     private static Main plugin;
     public ChatCommand chatCommand;
@@ -96,10 +95,15 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         inventoryItemCounter = new InventoryItemCounter(this);
         inventoryItemCounter.start();
 
-        // イベントリスナーの登録
+
+
+        
+        TabTPS tabTPS = new TabTPS(this, 20L);  // 1秒毎に更新
+        tabTPS.scheduleTabUpdates();
         getServer().getPluginManager().registerEvents(new CommandBlockViewer(this), this);
         this.getCommand("omikuji").setExecutor(new OmikujiCommand());
         getCommand("stats").setExecutor(new PlayerStatsCommand());
+        getCommand("bed").setExecutor(new BedTeleportCommand());
         getServer().getPluginManager().registerEvents(inventoryItemCounter, this);
         SetHomeCommand setHomeCommand = new SetHomeCommand();
         getCommand("sethome").setExecutor(setHomeCommand);
@@ -153,6 +157,35 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         MentionEventListener mention = new MentionEventListener(this);
         Bukkit.getPluginManager().registerEvents(mention, this);
         chatCommand = new ChatCommand("!", this);
+        CandyCrushGUI candyCrushGUI = new CandyCrushGUI(this);
+        getServer().getPluginManager().registerEvents(candyCrushGUI, this);
+
+        getCommand("CandyCrush").setExecutor((sender, command, label, args) -> {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                candyCrushGUI.openInventory(player);
+                return true;
+            }
+            return false;
+        });
+
+        getCommand("resetCandyCrush").setExecutor((sender, command, label, args) -> {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                candyCrushGUI.openInventory(player);
+                return true;
+            }
+            return false;
+        });
+
+        getCommand("showScore").setExecutor((sender, command, label, args) -> {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                player.sendMessage("Current Score: " + candyCrushGUI.getScore());
+                return true;
+            }
+            return false;
+        });
     }
 
 

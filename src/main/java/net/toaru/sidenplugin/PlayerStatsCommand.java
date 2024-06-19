@@ -9,7 +9,6 @@ import org.bukkit.Statistic;
 import org.bukkit.Material;
 
 import java.text.SimpleDateFormat;
-import java.util.concurrent.TimeUnit;
 
 public class PlayerStatsCommand implements CommandExecutor {
 

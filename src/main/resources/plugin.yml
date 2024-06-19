@@ -4,6 +4,15 @@ main: net.toaru.sidenplugin.Main
 api-version: '1.20'
 authors: [Toaru]
 commands:
+  CandyCrush:
+    description: Opens the Candy Crush GUI
+    usage: /CandyCrush
+  resetCandyCrush:
+    description: Resets the Candy Crush game
+    usage: /resetCandyCrush
+  showScore:
+    description: Shows the current score
+    usage: /showScore
   timer:
     description: タイマー管理コマンド
     usage: /timer <start|stop|reset|time|list> [時間:分:秒|タイマー名]
@@ -48,6 +57,10 @@ commands:
     description: プレイヤーの座標を表示するコマンド
   players:
     description: プレイヤーリストを表示するコマンド
+  bed:
+    description: ベッドにテレポートするコマンド
+
+
 
 permissions:
   timer.use:
