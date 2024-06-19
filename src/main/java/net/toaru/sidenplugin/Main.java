@@ -97,7 +97,8 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
 
 
 
-        
+        CartAutoDestroy listener = new CartAutoDestroy(this);
+        getServer().getPluginManager().registerEvents(listener, this);
         TabTPS tabTPS = new TabTPS(this, 20L);  // 1秒毎に更新
         tabTPS.scheduleTabUpdates();
         getServer().getPluginManager().registerEvents(new CommandBlockViewer(this), this);
