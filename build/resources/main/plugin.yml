@@ -4,6 +4,8 @@ main: net.toaru.sidenplugin.Main
 api-version: '1.20'
 authors: [Toaru]
 commands:
+  colorarmor:
+    description: colorarmor
   CandyCrush:
     description: Opens the Candy Crush GUI
     usage: /CandyCrush
@@ -50,9 +52,19 @@ commands:
   home:
     description: ホームに戻るコマンド
   day:
+    description: 朝にするコマンド
+  noon:
     description: 昼にするコマンド
   night:
     description: 夜にするコマンド
+  midnight:
+    description: 深夜にするコマンド
+  clear:
+    description: 晴れにするコマンド
+  rain:
+    description: 雨にするコマンド
+  thunder:
+    description: 雷雨にするコマンド
   coords:
     description: プレイヤーの座標を表示するコマンド
   players:

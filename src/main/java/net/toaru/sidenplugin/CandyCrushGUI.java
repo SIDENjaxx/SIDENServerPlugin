@@ -2,10 +2,12 @@ package net.toaru.sidenplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -67,7 +69,6 @@ public class CandyCrushGUI implements Listener {
     public void openInventory(Player player) {
         Inventory inventory = Bukkit.createInventory(null, size, getInventoryTitle());
         fillInventoryWithCandies(inventory);
-        handleInitialMatches(inventory);  // 初期状態でのマッチを処理
         addClockAndGlass(inventory);
 
         player.openInventory(inventory);
@@ -79,18 +80,12 @@ public class CandyCrushGUI implements Listener {
             @Override
             public void run() {
                 if (timeLimit <= 0) {
-                    player.closeInventory();
-                    String endMessage = player.getName() + "は" + score + "点で勝利した";
-                    if (score > highScore) {
-                        highScore = score;
-                        endMessage += " (新記録！)";
-                    }
-                    player.sendMessage(endMessage);
+                    endGame(player);
                     cancel();
                 } else {
                     timeLimit--;
                     updateClock(inventory);
-                    player.getOpenInventory().setTitle(getInventoryTitle());
+                    handleMatches(inventory); // 定期的にマッチチェック
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
@@ -116,16 +111,36 @@ public class CandyCrushGUI implements Listener {
         } else {
             int secondClickSlot = slot;
 
-            if (isValidMove(firstClickSlot, secondClickSlot) && isValidMatch(inventory, firstClickSlot, secondClickSlot)) {
+            if (isValidMove(firstClickSlot, secondClickSlot)) {
                 swapCandies(inventory, firstClickSlot, secondClickSlot);
-                firstClickSlot = null;
+                event.getWhoClicked().getWorld().playSound(event.getWhoClicked().getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1.0f, 1.0f);
 
-                // 交換後のキャンディをチェックし、マッチがある場合は削除
-                handleMatches(inventory);
+                if (!handleMatches(inventory)) {
+                    swapCandies(inventory, firstClickSlot, secondClickSlot); // マッチがなければ元に戻す
+                    event.getWhoClicked().getWorld().playSound(event.getWhoClicked().getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                }
+                firstClickSlot = null;
             } else {
                 firstClickSlot = null;
             }
         }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getView().getTitle().startsWith("キャンディークラッシュ")) {
+            endGame((Player) event.getPlayer());
+        }
+    }
+
+    private void endGame(Player player) {
+        player.closeInventory();
+        String endMessage = player.getName() + "は" + score + "点で勝利した";
+        if (score > highScore) {
+            highScore = score;
+            endMessage += " (新記録！)";
+        }
+        player.sendMessage(endMessage);
     }
 
     private void fillInventoryWithCandies(Inventory inventory) {
@@ -137,22 +152,8 @@ public class CandyCrushGUI implements Listener {
         }
     }
 
-    private void handleInitialMatches(Inventory inventory) {
-        handleMatches(inventory);
-    }
-
-    public int getScore() {
-        return score;
-    }
-
     private void addClockAndGlass(Inventory inventory) {
-        ItemStack clock = new ItemStack(Material.CLOCK);
-        ItemMeta meta = clock.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName("制限時間: " + (timeLimit / 60) + ":" + String.format("%02d", timeLimit % 60));
-            clock.setItemMeta(meta);
-        }
-        inventory.setItem(width - 1, clock);
+        updateClock(inventory);
 
         ItemStack grayGlassPane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         for (int i = width - 1 + width; i < size; i += width) {
@@ -180,13 +181,6 @@ public class CandyCrushGUI implements Listener {
         return (Math.abs(row1 - row2) == 1 && col1 == col2) || (Math.abs(col1 - col2) == 1 && row1 == row2);
     }
 
-    private boolean isValidMatch(Inventory inventory, int slot1, int slot2) {
-        swapCandies(inventory, slot1, slot2);
-        boolean isValid = !getMatchedSlots(inventory).isEmpty();
-        swapCandies(inventory, slot1, slot2); // 元に戻す
-        return isValid;
-    }
-
     private void swapCandies(Inventory inventory, int slot1, int slot2) {
         ItemStack item1 = inventory.getItem(slot1);
         ItemStack item2 = inventory.getItem(slot2);
@@ -194,25 +188,21 @@ public class CandyCrushGUI implements Listener {
         inventory.setItem(slot2, item1);
     }
 
-    private void handleMatches(Inventory inventory) {
+    private boolean handleMatches(Inventory inventory) {
         List<Integer> matchedSlots = getMatchedSlots(inventory);
+        boolean foundMatch = !matchedSlots.isEmpty();
+
         while (!matchedSlots.isEmpty()) {
             for (int matchedSlot : matchedSlots) {
                 inventory.setItem(matchedSlot, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
             }
-            try {
-                Thread.sleep(100); // 一瞬だけ灰色ガラスを表示するための遅延
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            for (int matchedSlot : matchedSlots) {
-                inventory.setItem(matchedSlot, new ItemStack(Material.AIR));
-            }
             updateScore(matchedSlots.size());
-            dropCandies(inventory);
+            dropCandies(inventory, matchedSlots);
             fillEmptySlots(inventory);
             matchedSlots = getMatchedSlots(inventory);
         }
+
+        return foundMatch;
     }
 
     private List<Integer> getMatchedSlots(Inventory inventory) {
@@ -221,7 +211,7 @@ public class CandyCrushGUI implements Listener {
         for (int row = 0; row < size / width; row++) {
             for (int col = 0; col < width - 2; col++) {
                 int slot = row * width + col;
-                if (slot % width != width - 1 && isMatching(inventory, slot, slot + 1, slot + 2)) {
+                if (isMatching(inventory, slot, slot + 1, slot + 2)) {
                     matchedSlots.add(slot);
                     matchedSlots.add(slot + 1);
                     matchedSlots.add(slot + 2);
@@ -251,30 +241,23 @@ public class CandyCrushGUI implements Listener {
         if (item1 == null || item2 == null || item3 == null) return false;
         if (item1.getType() == Material.AIR || item2.getType() == Material.AIR || item3.getType() == Material.AIR) return false;
 
-        return item1.getType() == item2.getType() && item2.getType() == item3.getType();
+        return item1.isSimilar(item2) && item2.isSimilar(item3);
     }
 
     private void updateScore(int matchedCount) {
         score += matchedCount * 10;
-        plugin.getLogger().info("Score: " + score);
+        updateInventoryTitle();
     }
 
-    private void dropCandies(Inventory inventory) {
-        for (int col = 0; col < width - 1; col++) {
-            for (int row = size / width - 1; row >= 0; row--) {
-                int slot = row * width + col;
-                if (inventory.getItem(slot) == null || inventory.getItem(slot).getType() == Material.AIR) {
-                    for (int rowAbove = row - 1; rowAbove >= 0; rowAbove--) {
-                        int slotAbove = rowAbove * width + col;
-                        ItemStack itemAbove = inventory.getItem(slotAbove);
-                        if (itemAbove != null && itemAbove.getType() != Material.AIR) {
-                            inventory.setItem(slot, itemAbove);
-                            inventory.setItem(slotAbove, new ItemStack(Material.AIR));
-                            break;
-                        }
-                    }
-                }
+    private void dropCandies(Inventory inventory, List<Integer> matchedSlots) {
+        for (int slot : matchedSlots) {
+            int col = slot % width;
+            for (int row = slot / width; row > 0; row--) {
+                int currentSlot = row * width + col;
+                int aboveSlot = (row - 1) * width + col;
+                inventory.setItem(currentSlot, inventory.getItem(aboveSlot));
             }
+            inventory.setItem(col, new ItemStack(Material.AIR)); // 最上段には新しいキャンディが入るためクリア
         }
     }
 
@@ -283,6 +266,24 @@ public class CandyCrushGUI implements Listener {
             if (i % width != width - 1 && (inventory.getItem(i) == null || inventory.getItem(i).getType() == Material.AIR)) {
                 ItemStack candy = CandyType.getRandomCandy().toItemStack();
                 inventory.setItem(i, candy);
+            }
+        }
+    }
+
+    public int getScore() {
+        // スコアを計算または取得するロジック
+        int score = 0;
+        // スコアを返す
+        return score;
+    }
+
+    private void updateInventoryTitle() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getOpenInventory().getTitle().startsWith("キャンディークラッシュ")) {
+                Inventory inventory = player.getOpenInventory().getTopInventory();
+                player.closeInventory();
+                inventory = Bukkit.createInventory(null, size, getInventoryTitle());
+                player.openInventory(inventory);
             }
         }
     }

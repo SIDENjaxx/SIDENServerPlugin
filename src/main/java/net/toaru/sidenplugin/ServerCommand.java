@@ -1,10 +1,12 @@
 package net.toaru.sidenplugin;
 
+import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
@@ -13,8 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RestartPlugin implements Listener, TabExecutor, TabCompleter {
-
+public class ServerCommand implements Listener, TabExecutor, TabCompleter {
 
 
     @Override
@@ -22,6 +23,41 @@ public class RestartPlugin implements Listener, TabExecutor, TabCompleter {
         if (args.length == 0) {
             sender.sendMessage("Usage: /server <restart|plugin> [plugin name]");
             return false;
+        }
+
+        if (args[0].equalsIgnoreCase("ban")) {
+            if (args.length == 2) {
+                String playerName = args[1];
+                Bukkit.getBanList(BanList.Type.NAME).addBan(playerName, "Banned by admin", null, null);
+                sender.sendMessage("Player " + playerName + " has been banned.");
+                return true;
+            } else {
+                sender.sendMessage("Usage: /server ban <player name>");
+                return false;
+            }
+        }
+
+        if (args[0].equalsIgnoreCase("kick")) {
+            if (args.length == 2) {
+                String playerName = args[1];
+                Bukkit.getPlayer(playerName).kickPlayer("Kicked by admin");
+                sender.sendMessage("Player " + playerName + " has been kicked.");
+                return true;
+            } else {
+                sender.sendMessage("Usage: /server kick <player name>");
+                return false;
+            }
+        }
+
+        if (args[0].equalsIgnoreCase("announce")) {
+            if (args.length >= 2) {
+                String announcement = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                Bukkit.broadcastMessage(announcement);
+                return true;
+            } else {
+                sender.sendMessage("Usage: /server announce <message>");
+                return false;
+            }
         }
 
         if (args[0].equalsIgnoreCase("shutdown")) {
@@ -98,13 +134,21 @@ public class RestartPlugin implements Listener, TabExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return Arrays.asList("restart", "plugin", "shutdown");
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("plugin")) {
-            List<String> pluginNames = new ArrayList<>();
-            for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
-                pluginNames.add(plugin.getName());
+            return Arrays.asList("restart", "plugin", "shutdown", "ban", "kick", "announce");
+        } else if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("ban") || args[0].equalsIgnoreCase("kick")) {
+                List<String> playerNames = new ArrayList<>();
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    playerNames.add(player.getName());
+                }
+                return playerNames;
+            } else if (args[0].equalsIgnoreCase("plugin")) {
+                List<String> pluginNames = new ArrayList<>();
+                for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+                    pluginNames.add(plugin.getName());
+                }
+                return pluginNames;
             }
-            return pluginNames;
         }
         return null;
     }

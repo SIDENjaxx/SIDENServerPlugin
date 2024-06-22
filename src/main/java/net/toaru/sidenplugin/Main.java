@@ -38,6 +38,7 @@ import java.util.Optional;
 public final class Main extends JavaPlugin implements CommandExecutor, TabCompleter {
 
 
+    private CandyCrushGUI candyCrushGUI;
     private static Main plugin;
     public ChatCommand chatCommand;
     public TimerManager getTimerManager() {
@@ -95,8 +96,11 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         inventoryItemCounter = new InventoryItemCounter(this);
         inventoryItemCounter.start();
 
-
-
+        getCommand("colorarmor").setExecutor(new ColorArmorCommand(this));
+        getCommand("colorarmor").setTabCompleter(new ColorArmorTabCompleter());
+        this.getCommand("thunder").setExecutor(new ThunderWeatherCommand());
+        this.getCommand("rain").setExecutor(new RainWeatherCommand());
+        this.getCommand("clear").setExecutor(new ClearWeatherCommand());
         CartAutoDestroy listener = new CartAutoDestroy(this);
         getServer().getPluginManager().registerEvents(listener, this);
         TabTPS tabTPS = new TabTPS(this, 20L);  // 1秒毎に更新
@@ -110,11 +114,13 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         getCommand("sethome").setExecutor(setHomeCommand);
         getCommand("home").setExecutor(new HomeCommand(setHomeCommand));
         getCommand("day").setExecutor(new DayCommand());
+        getCommand("noon").setExecutor(new NoonCommand());
         getCommand("night").setExecutor(new NightCommand());
+        getCommand("midnight").setExecutor(new MidnightCommand());
         getCommand("coords").setExecutor(new CoordsCommand());
         getCommand("players").setExecutor(new PlayersCommand());
-        getCommand("server").setExecutor(new RestartPlugin());
-        getCommand("server").setTabCompleter(new RestartPlugin());
+        getCommand("server").setExecutor(new ServerCommand());
+        getCommand("server").setTabCompleter(new ServerCommand());
         this.timerManager = new TimerManager(this);
         TimerCommand timerCommand = new TimerCommand(this.timerManager);
         getCommand("timer").setExecutor(timerCommand);
@@ -158,7 +164,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         MentionEventListener mention = new MentionEventListener(this);
         Bukkit.getPluginManager().registerEvents(mention, this);
         chatCommand = new ChatCommand("!", this);
-        CandyCrushGUI candyCrushGUI = new CandyCrushGUI(this);
+        candyCrushGUI = new CandyCrushGUI(this);
         getServer().getPluginManager().registerEvents(candyCrushGUI, this);
 
         getCommand("CandyCrush").setExecutor((sender, command, label, args) -> {
