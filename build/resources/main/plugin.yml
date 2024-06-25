@@ -4,6 +4,8 @@ main: net.toaru.sidenplugin.Main
 api-version: '1.20'
 authors: [Toaru]
 commands:
+  blevelcheck:
+    description: 明るさレベル表示
   colorarmor:
     description: colorarmor
   CandyCrush:

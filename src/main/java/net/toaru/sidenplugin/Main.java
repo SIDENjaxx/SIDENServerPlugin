@@ -7,6 +7,7 @@ import net.toaru.sidenplugin.commands.CommandUnHat;
 import net.toaru.sidenplugin.events.HatEventListener;
 import net.toaru.sidenplugin.events.MentionEventListener;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -38,15 +39,21 @@ import java.util.Optional;
 public final class Main extends JavaPlugin implements CommandExecutor, TabCompleter {
 
 
+
+
+    
     private CandyCrushGUI candyCrushGUI;
     private static Main plugin;
     public ChatCommand chatCommand;
+
     public TimerManager getTimerManager() {
         return timerManager;
     }
+
     public static Main getPlugin() {
         return plugin;
     }
+
     private TimerManager timerManager;
     private InventoryItemCounter inventoryItemCounter;
     public static Logger log;
@@ -96,6 +103,10 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         inventoryItemCounter = new InventoryItemCounter(this);
         inventoryItemCounter.start();
 
+
+
+
+        this.getCommand("blevelcheck").setExecutor(new LightLevelCheckCommand(this));
         getCommand("colorarmor").setExecutor(new ColorArmorCommand(this));
         getCommand("colorarmor").setTabCompleter(new ColorArmorTabCompleter());
         this.getCommand("thunder").setExecutor(new ThunderWeatherCommand());
@@ -106,6 +117,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         TabTPS tabTPS = new TabTPS(this, 20L);  // 1秒毎に更新
         tabTPS.scheduleTabUpdates();
         getServer().getPluginManager().registerEvents(new CommandBlockViewer(this), this);
+        getServer().getPluginManager().registerEvents(new OnePlayerSleep(this), this);
         this.getCommand("omikuji").setExecutor(new OmikujiCommand());
         getCommand("stats").setExecutor(new PlayerStatsCommand());
         getCommand("bed").setExecutor(new BedTeleportCommand());
@@ -167,6 +179,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         candyCrushGUI = new CandyCrushGUI(this);
         getServer().getPluginManager().registerEvents(candyCrushGUI, this);
 
+
         getCommand("CandyCrush").setExecutor((sender, command, label, args) -> {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
@@ -209,9 +222,9 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
     public int rank = 1;
     public String ys;
 
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String Label, String[] args) {
-        //投票時に関する処理
         if (cmd.getName().equals("v")) {
             if (args.length == 1) {
                 //投票時の処理
@@ -390,6 +403,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
 
         return true;
     }
+
 
     //・/v <投票先>コマンド実行時のTab補完
     @Override

@@ -21,5 +21,8 @@ mention:
   prefix: "@"
   # ボスバー表示時間(秒)
   duration: 5
+backup:
+  interval: 72000 # バックアップ間隔（tick単位、1時間 = 72000 tick）
+  folder: plugins/SidenPlugin/backups # バックアップフォルダのパス
 List:
 update-interval: 1
